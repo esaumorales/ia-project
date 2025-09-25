@@ -27,7 +27,7 @@ export default function StudentsTable({ data }: { data: EnrichedStudent[] }) {
             <Th>Asistencia (%)</Th>
             <Th>Sueño (h)</Th>
             <Th>Puntuación Examen</Th>
-            <Th>Categoría</Th>
+            <Th >Categoría</Th>
             <Th className="text-center">Acciones</Th>
           </tr>
         </thead>
@@ -116,7 +116,7 @@ function Th({
 }) {
   return (
     <th
-      className={`text-left font-semibold px-3 py-2 text-sm text-gray-700 ${
+      className={`text-left font-semibold px-3 py-2 text-sm text-gray-700  ${
         className ?? ''
       }`}>
       {children}
