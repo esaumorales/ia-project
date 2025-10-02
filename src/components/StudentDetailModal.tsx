@@ -81,9 +81,6 @@ export default function StudentDetailModal({
                 {humanSegment(student)}
               </span>
               <span className="text-xs text-gray-500">
-                Cluster C{student.cluster}
-              </span>
-              <span className="text-xs text-gray-500">
                 Score: {student.exam_score}
               </span>
             </div>
@@ -222,10 +219,10 @@ function badgeForSegment(seg: EnrichedStudent['segment']) {
 }
 
 function humanSegment(s: EnrichedStudent) {
-  // Ajusta a tus nombres/etiquetas preferidas
+  // Descripciones breves, sin “Cluster”
   return s.segment === 'Good'
-    ? 'Muy comprometidos en clase'
+    ? 'Estudiantes comprometidos y activos'
     : s.segment === 'Average'
-    ? 'Participación baja/intermitente'
-    : 'Baja dedicación y ánimo bajo';
+    ? 'Estudiantes con participación intermitente'
+    : 'Estudiantes con menor dedicación actual';
 }
