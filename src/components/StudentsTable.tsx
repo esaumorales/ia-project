@@ -27,7 +27,7 @@ export default function StudentsTable({ data }: { data: EnrichedStudent[] }) {
             <Th>Asistencia (%)</Th>
             <Th>Sueño (h)</Th>
             <Th>Puntuación Examen</Th>
-            <Th >Categoría</Th>
+            <Th>Categoría</Th>
             <Th className="text-center">Acciones</Th>
           </tr>
         </thead>
@@ -140,7 +140,7 @@ function badgeForSegment(seg: EnrichedStudent['segment']) {
     : 'bg-rose-100 text-rose-700';
 }
 function segmentHuman(seg: EnrichedStudent['segment']) {
-  if (seg === 'Good') return 'Muy comprometidos en clase';
-  if (seg === 'Average') return 'Participación baja/intermitente';
-  return 'Baja dedicación y ánimo bajo';
+  if (seg === 'Good') return 'Estudiantes comprometidos';
+  if (seg === 'Average') return 'Estudiantes intermitentes';
+  return 'Estudiantes con baja dedicación';
 }

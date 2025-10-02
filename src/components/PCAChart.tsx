@@ -26,3 +26,4 @@ export default function PCAChart({ data, onSelect }: { data: EnrichedStudent[]; 
     </div>
   );
 }
+  
