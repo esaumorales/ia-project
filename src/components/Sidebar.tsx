@@ -7,15 +7,13 @@ export default function Sidebar() {
   const role = useAppStore((s) => s.role);
   const setRole = useAppStore((s) => s.setRole);
 
-  const active = (to: string) => {
-    const [base] = to.split('?');
-    const [pbase] = pathname.split('?');
-    const sameBase = pbase === base || pathname.startsWith(base);
-    // si el link trae ?tab=xxx y la url también, compara
-    const tab = new URLSearchParams(to.split('?')[1]).get('tab');
-    if (!tab) return sameBase;
+  const isActive = (to: string) => {
+    const [linkBase, linkQuery] = to.split('?');
+    const linkTab = new URLSearchParams(linkQuery || '').get('tab');
     const curTab = new URLSearchParams(search).get('tab');
-    return sameBase && curTab === tab;
+    if (!linkTab) return pathname === linkBase && curTab === null;
+    const baseMatch = pathname.startsWith(linkBase);
+    return baseMatch && curTab === linkTab;
   };
 
   const items =
@@ -26,7 +24,7 @@ export default function Sidebar() {
           { to: '/alumno?tab=reco', label: 'Recomendaciones', icon: 'mdi:star-outline' },
         ]
       : [
-          { to: '/profesor', label: 'Panel Profesor', icon: 'mdi:account-tie-outline' },
+          { to: '/profesor?tab=panel', label: 'Panel Profesor', icon: 'mdi:account-tie-outline' },
           { to: '/profesor?tab=clusters', label: 'Grupos/Clusters', icon: 'mdi:account-group-outline' },
           { to: '/profesor?tab=pca', label: 'PCA', icon: 'mdi:scatter-plot' },
           { to: '/profesor?tab=insights', label: 'Insights', icon: 'mdi:lightbulb-on-outline' },
@@ -43,9 +41,7 @@ export default function Sidebar() {
           <Link
             key={it.to}
             to={it.to}
-            className={`flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-200 ${
-              active(it.to) ? 'bg-gray-200 font-medium' : ''
-            }`}
+            className={`flex items-center gap-2 px-3 py-2 rounded hover:bg-gray-200 ${isActive(it.to) ? 'bg-gray-200 font-medium' : ''}`}
           >
             <Icon icon={it.icon} className="text-xl" />
             {it.label}

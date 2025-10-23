@@ -1,4 +1,5 @@
-import { useSearchParams } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import ProfessorFilters from '../components/Profesor/ProfessorFilters';
 import ProfessorKPIs from '../components/Profesor/ProfessorKPIs';
 import StudentsTable from '../components/Profesor/StudentsTable';
@@ -8,9 +9,20 @@ import PCAScatter from '../components/Profesor/PCAScatter';
 import { useFilteredStudents } from '../shared/hooks';
 import { useAppStore } from '../shared/store';
 
+type Tabs = 'panel' | 'clusters' | 'pca' | 'insights';
+
 export default function ProfessorPage() {
   const [params] = useSearchParams();
-  const tab = (params.get('tab') || 'clusters') as 'clusters' | 'pca' | 'insights';
+  const navigate = useNavigate();
+
+  // redirige /profesor -> /profesor?tab=panel
+  useEffect(() => {
+    if (!params.get('tab')) {
+      navigate('/profesor?tab=panel', { replace: true });
+    }
+  }, [params, navigate]);
+
+  const tab = (params.get('tab') || 'panel') as Tabs;
 
   const filtered = useFilteredStudents();
   const { data } = useAppStore();
@@ -20,10 +32,7 @@ export default function ProfessorPage() {
     <div className="max-w-[1880px] mx-auto px-4 py-8">
       <div className="flex items-center justify-between">
         <h2 className="text-2xl font-semibold">
-          Vista del Profesor{' '}
-          {tab === 'pca' && (
-            <span className="text-gray-400 text-sm" title="PCA">○</span>
-          )}
+          Vista del Profesor {tab === 'pca' && <span className="text-gray-400 text-sm" title="PCA">○</span>}
         </h2>
         <div className="text-sm text-gray-400">Segmentación de Estudiantes</div>
       </div>
@@ -32,19 +41,24 @@ export default function ProfessorPage() {
         <ProfessorFilters />
       </div>
 
-      <div className="mt-6">
-        <ProfessorKPIs data={filtered} />
-      </div>
-
-      {/* ==== CONTENIDO SEGÚN TAB ==== */}
-      {tab === 'pca' && (
-        <div className="mt-6">
-          <PCAScatter data={dataset} />
-        </div>
+      {/* Panel: dashboard (KPIs + PCA embebido) */}
+      {tab === 'panel' && (
+        <>
+          <div className="mt-6">
+            <ProfessorKPIs data={filtered} />
+          </div>
+          <div className="mt-6">
+            <PCAScatter data={dataset} />
+          </div>
+        </>
       )}
 
+      {/* Clusters: tabla + leyenda + modal */}
       {tab === 'clusters' && (
         <>
+          <div className="mt-6">
+            <ProfessorKPIs data={filtered} />
+          </div>
           <div className="mt-6">
             <StudentsTable data={filtered} />
           </div>
@@ -53,11 +67,16 @@ export default function ProfessorPage() {
         </>
       )}
 
-      {tab === 'insights' && (
-        <div className="mt-10 text-gray-500">
-          {/* deja tus componentes/insights aquí si ya los tienes */}
-          Próximamente: Insights
+      {/* PCA: vista dedicada */}
+      {tab === 'pca' && (
+        <div className="mt-6">
+          <PCAScatter data={dataset} />
         </div>
+      )}
+
+      {/* Insights (placeholder) */}
+      {tab === 'insights' && (
+        <div className="mt-10 text-gray-500">Próximamente: Insights</div>
       )}
     </div>
   );
