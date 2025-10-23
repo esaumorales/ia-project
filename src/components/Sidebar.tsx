@@ -31,7 +31,7 @@ export default function Sidebar() {
         ];
 
   return (
-    <aside className="w-60 bg-gray-100 border-r p-4 flex flex-col">
+    <aside className="w-60   p-4 flex flex-col">
       <h2 className="text-lg font-semibold mb-4">
         {role === 'Alumno' ? 'Alumno' : 'Profesor'}
       </h2>
