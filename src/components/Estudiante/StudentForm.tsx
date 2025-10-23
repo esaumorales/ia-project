@@ -24,14 +24,13 @@ export default function StudentForm() {
     home_study_environment: 4,
     study_resources_availability: 4,
     financial_stress_level: 2,
-    diet_quality: 3,
     age: 20,
     gender: "Female",
     part_time_job: false,
     parental_education_level: "Tertiary",
     internet_quality: "Good",
     extracurricular_participation: 1,
-    exam_score: 75
+    exam_score: 75,
   });
 
   const edit = (k: string) => (e: React.ChangeEvent<HTMLInputElement>) =>
@@ -46,7 +45,8 @@ export default function StudentForm() {
       ...form,
     } as Student;
 
-    const enriched = buildAnalytics([...data, newStudent], 3);
+    // FIX: buildAnalytics solo con 1 argumento
+    const enriched = buildAnalytics([...data, newStudent]);
     setData(enriched);
     setSelectedId(newStudent.id);
   };
@@ -84,13 +84,26 @@ export default function StudentForm() {
 }
 
 function Num({
-  label, value, onChange, step
-}: { label:string; value:number; onChange:(e:React.ChangeEvent<HTMLInputElement>)=>void; step?:string }) {
+  label,
+  value,
+  onChange,
+  step,
+}: {
+  label: string;
+  value: number;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  step?: string;
+}) {
   return (
     <label className="flex flex-col text-sm">
       <span className="text-gray-700 mb-1">{label}</span>
-      <input type="number" value={value} onChange={onChange} step={step}
-             className="rounded-[8px] border border-gray-300 px-3 py-2" />
+      <input
+        type="number"
+        value={value}
+        onChange={onChange}
+        step={step}
+        className="rounded-[8px] border border-gray-300 px-3 py-2"
+      />
     </label>
   );
 }

@@ -45,7 +45,7 @@ export default function ProfessorPage() {
       {tab === 'panel' && (
         <>
           <div className="mt-6">
-            <ProfessorKPIs data={filtered} />
+            <ProfessorKPIs />
           </div>
           <div className="mt-6">
             <PCAScatter data={dataset} />
@@ -57,7 +57,7 @@ export default function ProfessorPage() {
       {tab === 'clusters' && (
         <>
           <div className="mt-6">
-            <ProfessorKPIs data={filtered} />
+            <ProfessorKPIs />
           </div>
           <div className="mt-6">
             <StudentsTable data={filtered} />

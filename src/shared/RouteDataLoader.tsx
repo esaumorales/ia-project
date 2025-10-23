@@ -4,13 +4,10 @@ import { buildAnalytics } from './analytics';
 import type { Student } from './types';
 
 /**
- * Componente "silencioso" que solo se encarga de:
- * - cargar /data/students.json
- * - enriquecer con buildAnalytics
- * - hacer setData y seleccionar el primero
- *
- * Equivale al useEffect que tenías en HomePage.
- * Se monta una sola vez en App.
+ * Carga inicial de datos:
+ * - Lee /data/students.json
+ * - Aplica buildAnalytics
+ * - Guarda en el store global
  */
 export default function RouteDataLoader() {
   const { setData, setSelectedId } = useAppStore();
@@ -19,7 +16,8 @@ export default function RouteDataLoader() {
     fetch('/data/students.json')
       .then((r) => r.json())
       .then((rows: Student[]) => {
-        const enriched = buildAnalytics(rows, 4);
+        // FIX: buildAnalytics solo recibe un argumento
+        const enriched = buildAnalytics(rows);
         setData(enriched);
         if (enriched.length) setSelectedId(enriched[0].id);
       })
