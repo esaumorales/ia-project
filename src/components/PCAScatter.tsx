@@ -93,7 +93,7 @@ export default function PCAScatter({
   } | null>(null);
 
   return (
-    <div ref={ref} className="w-full">
+    <div ref={ref} className="w-full shadow-xl">
       <div className="flex items-center justify-between mb-2">
         <div className="text-sm font-medium text-gray-700">
           Distribución PCA (color por categoría)

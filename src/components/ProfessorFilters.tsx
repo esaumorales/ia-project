@@ -18,7 +18,7 @@ export default function ProfessorFilters() {
     set([cur[0], Math.max(v, cur[0])]);
 
   return (
-    <div className="bg-white border rounded-[4px] shadow-sm p-4 border-gray-300">
+    <div className="bg-white border rounded-[4px] shadow-xl p-4 border-gray-300">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         {/* izquierda */}
         <div className="flex flex-wrap items-center gap-3">

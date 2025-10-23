@@ -15,7 +15,7 @@ export default function StudentsTable({ data }: { data: EnrichedStudent[] }) {
   }, [data, page, pageSize]);
 
   return (
-    <div className="rounded-[4px] border border-gray-300 shadow-sm overflow-hidden">
+    <div className="rounded-[4px] border border-gray-300 shadow-xl overflow-hidden">
       <table className="w-full border-collapse">
         <thead>
           <tr className="bg-gray-50 border-b">

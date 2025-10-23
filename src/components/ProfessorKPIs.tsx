@@ -26,7 +26,7 @@ export default function ProfessorKPIs({ data }: { data: EnrichedStudent[] }) {
   }, [data]);
 
   return (
-    <div className="grid gap-4 lg:grid-cols-4">
+    <div className="grid gap-4 lg:grid-cols-4 ">
       <Card title="Total Estudiantes" icon="𐀪𐀪">
         <div className="text-3xl font-bold mt-1">{total}</div>
       </Card>
@@ -62,7 +62,7 @@ export default function ProfessorKPIs({ data }: { data: EnrichedStudent[] }) {
 
 function Card({ title, icon, children }:{title:string; icon:string; children:React.ReactNode}) {
   return (
-    <div className="bg-white border border-gray-300 rounded-2xl p-4 shadow-sm">
+    <div className="bg-white border border-gray-300 rounded-2xl p-4 shadow-xl">
       <div className="text-sm text-gray-500 flex items-center flex-row-reverse justify-between">
         <span>{icon}</span><span>{title}</span>
       </div>

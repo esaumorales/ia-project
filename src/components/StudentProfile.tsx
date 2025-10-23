@@ -15,7 +15,7 @@ export default function StudentProfile({ data }: { data: EnrichedStudent[] }) {
   if (!item) return null;
 
   return (
-    <div className="bg-white border rounded-2xl p-4 shadow-sm">
+    <div className="bg-white border rounded-2xl p-4 shadow-xl">
       <div className="flex items-center justify-between gap-3">
         <div>
           <h3 className="text-xl font-semibold">{item.name}</h3>

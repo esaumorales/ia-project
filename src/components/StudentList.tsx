@@ -5,7 +5,7 @@ import { useAppStore } from "../shared/store";
 export default function StudentList({ data }: { data: EnrichedStudent[] }) {
   const { selectedId, setSelectedId } = useAppStore();
   return (
-    <div className="bg-white border rounded-2xl shadow-sm overflow-hidden">
+    <div className="bg-white border rounded-2xl shadow-xl overflow-hidden">
       <table className="w-full border-collapse">
         <thead>
           <tr className="border-b bg-gray-50">

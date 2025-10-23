@@ -10,7 +10,7 @@ export default function PCAChart({ data, onSelect }: { data: EnrichedStudent[]; 
   const fmt = (d: EnrichedStudent) => ({ x: d.pcaX, y: d.pcaY, id: d.id, name: d.name });
 
   return (
-    <div className="w-full h-96">
+    <div className="w-full h-96 ">
       <ResponsiveContainer>
         <ScatterChart margin={{ top: 10, right: 20, bottom: 10, left: 0 }}>
           <CartesianGrid />
