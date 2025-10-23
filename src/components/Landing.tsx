@@ -1,11 +1,21 @@
-import React from "react";
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAppStore } from '../shared/store';
 
-type Props = {
-  onAlumno?: () => void;
-  onProfesor?: () => void;
-};
+export default function LandingPage() {
+  const navigate = useNavigate();
+  const setRole = useAppStore((s) => s.setRole);
 
-export default function Landing({ onAlumno, onProfesor }: Props) {
+  const goAlumno = () => {
+    setRole('Alumno');
+    navigate('/alumno');
+  };
+
+  const goProfesor = () => {
+    setRole('Profesor');
+    navigate('/profesor');
+  };
+
   return (
     <div className="min-h-[88vh] bg-gradient-to-b from-indigo-50/60 via-white to-white">
       {/* Hero */}
@@ -19,14 +29,14 @@ export default function Landing({ onAlumno, onProfesor }: Props) {
 
         <div className="mt-8 flex items-center justify-center gap-3">
           <button
-            onClick={onAlumno}
+            onClick={goAlumno}
             className="inline-flex items-center gap-2 rounded-xl bg-black text-white px-5 py-3 text-sm hover:bg-gray-900"
           >
             Evaluar mi categoría
             <span aria-hidden>→</span>
           </button>
           <button
-            onClick={onProfesor}
+            onClick={goProfesor}
             className="inline-flex items-center gap-2 rounded-xl border px-5 py-3 text-sm hover:bg-gray-50"
           >
             <span aria-hidden>👨‍🏫</span>
@@ -80,25 +90,29 @@ export default function Landing({ onAlumno, onProfesor }: Props) {
 
 function Step({
   children,
-  color = "indigo",
+  color = 'indigo',
 }: {
   children: React.ReactNode;
-  color?: "indigo" | "purple" | "green";
+  color?: 'indigo' | 'purple' | 'green';
 }) {
   const styles =
-    color === "indigo"
-      ? "bg-indigo-50 text-indigo-700"
-      : color === "purple"
-      ? "bg-purple-50 text-purple-700"
-      : "bg-emerald-50 text-emerald-700";
-  return (
-    <span className={`px-3 py-1 rounded-full ${styles}`}>
-      {children}
-    </span>
-  );
+    color === 'indigo'
+      ? 'bg-indigo-50 text-indigo-700'
+      : color === 'purple'
+      ? 'bg-purple-50 text-purple-700'
+      : 'bg-emerald-50 text-emerald-700';
+  return <span className={`px-3 py-1 rounded-full ${styles}`}>{children}</span>;
 }
 
-function Card({ title, text, icon }: { title: string; text: string; icon: string }) {
+function Card({
+  title,
+  text,
+  icon,
+}: {
+  title: string;
+  text: string;
+  icon: string;
+}) {
   return (
     <div className="bg-white border rounded-2xl shadow-sm p-6">
       <div className="flex items-center gap-2">

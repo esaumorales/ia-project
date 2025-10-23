@@ -1,6 +1,6 @@
 import React from "react";
-import type { EnrichedStudent } from "../shared/types";
-import { useAppStore } from "../shared/store";
+import type { EnrichedStudent } from "../../shared/types";
+import { useAppStore } from "../../shared/store";
 
 export default function StudentList({ data }: { data: EnrichedStudent[] }) {
   const { selectedId, setSelectedId } = useAppStore();

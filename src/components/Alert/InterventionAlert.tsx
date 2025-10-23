@@ -23,7 +23,7 @@ export default function InterventionAlert({ open, onClose }: Props) {
             transition={{ type: "spring", duration: 0.4 }}
           >
             <h3 className="text-xl font-semibold text-gray-800">
-              Intervención Aceptada ✅
+              Intervención Aceptada 
             </h3>
             <p className="text-gray-600 mt-2 text-sm">
               Se ha registrado la intervención para este estudiante.  

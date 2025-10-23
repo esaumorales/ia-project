@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { useAppStore } from "../shared/store";
-import type { Student } from "../shared/types";
-import { buildAnalytics } from "../shared/analytics";
+import { useAppStore } from "../../shared/store";
+import type { Student } from "../../shared/types";
+import { buildAnalytics } from "../../shared/analytics";
 
 export default function StudentForm() {
   const { data, setData, setSelectedId } = useAppStore();

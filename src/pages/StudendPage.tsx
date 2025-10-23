@@ -1,5 +1,5 @@
 
-import StudentForm from '../components/StudentForm';
+import StudentForm from '../components/Estudiante/StudentForm';
 
 export default function StudentPage() {
 

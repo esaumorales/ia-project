@@ -1,5 +1,5 @@
 import { Icon } from '@iconify/react';
-import { useAppStore } from "../shared/store";
+import { useAppStore } from '../../shared/store';
 
 export default function ProfessorFilters() {
   const {

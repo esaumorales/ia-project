@@ -1,12 +1,13 @@
 import { create } from 'zustand';
 import type { EnrichedStudent, SegmentLabel } from './types';
 
-type Role = 'Landing' | 'Alumno' | 'Profesor';
+export type Role = 'Landing' | 'Alumno' | 'Profesor';
 type GenderFilter = 'All' | 'Male' | 'Female' | 'Other';
 type ViewMode = 'table' | 'cards';
 type OrderBy = 'Nombre' | 'Estudio' | 'Asistencia' | 'Score';
 
 type State = {
+  // Rol / layout
   role: Role;
   setRole: (r: Role) => void;
 
@@ -27,14 +28,14 @@ type State = {
   setGenderFilter: (g: GenderFilter) => void;
   attendanceRange: [number, number]; // 0..100
   setAttendanceRange: (r: [number, number]) => void;
-  studyRange: [number, number]; // 0..300 min/día (ajusta a tu dataset)
+  studyRange: [number, number]; // 0..300 min/día
   setStudyRange: (r: [number, number]) => void;
   orderBy: OrderBy;
   setOrderBy: (o: OrderBy) => void;
   viewMode: ViewMode;
   setViewMode: (v: ViewMode) => void;
 
-  //   Modal
+  // Modal detalle
   isDetailOpen: boolean;
   setDetailOpen: (open: boolean) => void;
 };

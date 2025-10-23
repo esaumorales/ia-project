@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import type { EnrichedStudent } from "../shared/types";
+import type { EnrichedStudent } from "../../shared/types";
 
 export default function ProfessorKPIs({ data }: { data: EnrichedStudent[] }) {
   const { total, byCluster, avgByCluster, lowAttendancePct } = useMemo(() => {

@@ -1,5 +1,5 @@
 import { ResponsiveContainer, ScatterChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, Scatter } from "recharts";
-import type { EnrichedStudent } from "../shared/types";
+import type { EnrichedStudent } from "../../shared/types";
 
 export default function PCAChart({ data, onSelect }: { data: EnrichedStudent[]; onSelect?: (id:number)=>void }) {
   const groups = {

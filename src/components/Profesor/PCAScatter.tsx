@@ -1,6 +1,6 @@
 import  { useMemo, useRef, useState, useEffect } from "react";
-import type { EnrichedStudent } from "../shared/types";
-import { useAppStore } from "../shared/store";
+import type { EnrichedStudent } from "../../shared/types";
+import { useAppStore } from "../../shared/store";
 
 // Paleta consistente con tu leyenda:
 // Cluster 0 (indigo), 1 (rose), 2 (amber), 3 (emerald)

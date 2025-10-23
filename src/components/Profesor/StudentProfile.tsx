@@ -1,8 +1,8 @@
 import  { useMemo } from "react";
-import { useAppStore } from "../shared/store";
-import type { EnrichedStudent } from "../shared/types";
+import { useAppStore } from "../../shared/store";
+import type { EnrichedStudent } from "../../shared/types";
 import { Pill } from "./StudentList";
-import { explainStudent } from "../shared/analytics";
+import { explainStudent } from "../../shared/analytics";
 
 export default function StudentProfile({ data }: { data: EnrichedStudent[] }) {
   const { selectedId, role } = useAppStore();

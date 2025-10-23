@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
-import type { EnrichedStudent } from '../shared/types';
-import { useAppStore } from '../shared/store';
-import { explainStudent } from '../shared/analytics';
+import type { EnrichedStudent } from '../../shared/types';
+import { useAppStore } from '../../shared/store';
+import { explainStudent } from '../../shared/analytics';
 import { Icon } from '@iconify/react';
 import { motion, AnimatePresence } from 'framer-motion';
 

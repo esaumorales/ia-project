@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import type { EnrichedStudent } from '../shared/types';
-import { useAppStore } from '../shared/store';
+import type { EnrichedStudent } from '../../shared/types';
+import { useAppStore } from '../../shared/store';
 import { Icon } from '@iconify/react';
 
 export default function StudentsTable({ data }: { data: EnrichedStudent[] }) {
