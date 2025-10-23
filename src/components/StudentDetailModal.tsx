@@ -1,8 +1,9 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import type { EnrichedStudent } from '../shared/types';
 import { useAppStore } from '../shared/store';
 import { explainStudent } from '../shared/analytics';
 import { Icon } from '@iconify/react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function StudentDetailModal({
   allData,
@@ -10,6 +11,8 @@ export default function StudentDetailModal({
   allData: EnrichedStudent[];
 }) {
   const { isDetailOpen, setDetailOpen, selectedId } = useAppStore();
+  const [showConfirm, setShowConfirm] = useState(false);
+
   const student = allData.find((s) => s.id === selectedId);
 
   const averages = useMemo(() => {
@@ -61,7 +64,7 @@ export default function StudentDetailModal({
               </div>
             </div>
             <button
-              className="hover:shadow-gray-100 hover:shadow-sm animate-spin"
+              className="hover:shadow-gray-100 hover:shadow-sm"
               onClick={() => setDetailOpen(false)}
               aria-label="Cerrar">
               <Icon
@@ -150,7 +153,7 @@ export default function StudentDetailModal({
 
             {/* Resumen textual */}
             {averages && (
-              <div className="mt-5 rounded-[4px] bg-gray-30  p-4 shadow-sm">
+              <div className="mt-5 rounded-[4px] bg-gray-50 p-4 shadow-sm">
                 <div className="font-medium mb-2">Resumen del Perfil</div>
                 <p className="text-sm text-gray-700">
                   {trendText(
@@ -183,20 +186,69 @@ export default function StudentDetailModal({
 
           <div className="px-5 pb-5 flex justify-end">
             <button
-              className="rounded-xl bg-indigo-600 text-white px-4 py-2 text-sm hover:bg-indigo-700"
-              onClick={() => alert('Intervention (placeholder)')}>
+              className="rounded-xl bg-indigo-600 text-white px-4 py-2 text-sm hover:bg-indigo-700 transition"
+              onClick={() => setShowConfirm(true)}>
               Intervention
             </button>
           </div>
         </div>
       </div>
+
+      {/* Modal de confirmación (alerta elegante) */}
+      <ConfirmModal
+        open={showConfirm}
+        onClose={() => setShowConfirm(false)}
+      />
     </div>
+  );
+}
+
+function ConfirmModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  return (
+    <AnimatePresence>
+      {open && (
+        <motion.div
+          className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+        >
+          <motion.div
+            className="bg-white w-full max-w-sm mx-4 rounded-2xl shadow-2xl p-6 text-center border"
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.9, opacity: 0 }}
+            transition={{ type: 'spring', duration: 0.35 }}
+          >
+            <div className="flex items-center justify-center w-12 h-12 rounded-full bg-emerald-100 mx-auto">
+              <Icon icon="mdi:check" className="text-emerald-600" width="24" height="24" />
+            </div>
+            <h3 className="mt-3 text-lg font-semibold text-gray-800">
+              Intervención aceptada
+            </h3>
+            <p className="mt-1 text-sm text-gray-600">
+              Se registró la intervención para este estudiante. Puedes hacer
+              seguimiento en la sección de reportes.
+            </p>
+
+            <div className="mt-5 flex justify-center">
+              <button
+                onClick={onClose}
+                className="px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm hover:bg-indigo-700 transition"
+              >
+                Entendido
+              </button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
 
 function Block({ title, items }: { title: string; items: [string, string][] }) {
   return (
-    <div className=" border-gray-300 shadow-sm p-3">
+    <div className="border border-gray-300 rounded-md shadow-sm p-3">
       <div className="text-xs text-gray-500 mb-2">{title}</div>
       <ul className="space-y-1 text-sm">
         {items.map(([k, v]) => (
@@ -219,7 +271,6 @@ function badgeForSegment(seg: EnrichedStudent['segment']) {
 }
 
 function humanSegment(s: EnrichedStudent) {
-  // Descripciones breves, sin “Cluster”
   return s.segment === 'Good'
     ? 'Estudiantes comprometidos y activos'
     : s.segment === 'Average'

@@ -12,6 +12,7 @@
   "dependencies": {
     "@iconify/utils": "^2.3.0",
     "@tailwindcss/vite": "^4.1.13",
+    "framer-motion": "^12.23.24",
     "ml-kmeans": "^6.0.0",
     "ml-pca": "^4.1.1",
     "react": "^19.1.1",

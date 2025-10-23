@@ -35,12 +35,12 @@ export default function StudentsTable({ data }: { data: EnrichedStudent[] }) {
           {pageData.map((s) => (
             <tr key={s.id} className="border-b">
               <Td>{s.student_id}</Td>
-              <Td className="font-medium">{s.name}</Td>
-              <Td>{s.study_minutes_per_day}</Td>
-              <Td>{s.social_media_minutes}</Td>
-              <Td>{s.netflix_minutes}</Td>
+              <Td className="font-medium">{s.name} </Td>
+              <Td>{s.study_minutes_per_day} <span>min/dia</span></Td>
+              <Td>{s.social_media_minutes} <span>min</span> </Td>
+              <Td>{s.netflix_minutes} <span>min</span></Td>
               <Td>{s.attendance_percentage.toFixed(1)}%</Td>
-              <Td>{s.sleep_hours}</Td>
+              <Td>{s.sleep_hours} <span>h</span></Td>
               <Td>{s.exam_score.toFixed(1)}</Td>
               <Td>
                 <span
