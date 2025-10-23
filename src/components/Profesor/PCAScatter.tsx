@@ -1,23 +1,26 @@
-import  { useMemo, useRef, useState, useEffect } from "react";
+import { useMemo, useRef, useState, useEffect } from "react";
 import type { EnrichedStudent } from "../../shared/types";
 import { useAppStore } from "../../shared/store";
 
-// Paleta consistente con tu leyenda:
-// Cluster 0 (indigo), 1 (rose), 2 (amber), 3 (emerald)
+// Paleta consistente con la leyenda (0..2)
 const clusterColor = (c: number) =>
   c === 0
     ? "#6366f1" // indigo-500
     : c === 1
     ? "#f43f5e" // rose-500
-    : c === 2
-    ? "#f59e0b" // amber-500
-    : "#10b981"; // emerald-500
+    : "#f59e0b"; // amber-500
+
+// PRNG determinista para jitter estable por id
+function rand01(seed: number) {
+  const x = Math.sin(seed * 12.9898) * 43758.5453;
+  return x - Math.floor(x);
+}
 
 type Props = {
   data: EnrichedStudent[];
   height?: number; // px
   pointRadius?: number; // px
-  colorBy?: "cluster"; // se deja extensible (segment) si luego quisieras
+  colorBy?: "cluster"; // extensible si luego usas "segment"
 };
 
 export default function PCAScatter({
@@ -26,7 +29,14 @@ export default function PCAScatter({
   pointRadius = 4,
   colorBy = "cluster",
 }: Props) {
-  const { setSelectedId, setDetailOpen } = useAppStore();
+  const {
+    setSelectedId,
+    setDetailOpen,
+    selectedCluster,
+    pcaScale,
+    pcaJitter,
+  } = useAppStore();
+
   const [hoverId, setHoverId] = useState<number | null>(null);
   const [containerWidth, setContainerWidth] = useState(800);
   const ref = useRef<HTMLDivElement>(null);
@@ -42,17 +52,31 @@ export default function PCAScatter({
     return () => ro.disconnect();
   }, []);
 
+  // Aplica scale/jitter sobre las coordenadas sin mutar el array original
+  const points = useMemo(() => {
+    const j = pcaJitter;
+    const s = pcaScale || 1;
+    return data.map((d) => {
+      const jx = (rand01(d.id * 3.17) - 0.5) * j;
+      const jy = (rand01(d.id * 7.91) - 0.5) * j;
+      return {
+        ...d,
+        _px: d.pcaX * s + jx,
+        _py: d.pcaY * s + jy,
+      };
+    });
+  }, [data, pcaJitter, pcaScale]);
+
   // Escalas
   const { xScale, yScale, xTicks, yTicks, bounds } = useMemo(() => {
     const pad = 0.08; // padding en espacio PCA
-    const xs = data.map((d) => d.pcaX);
-    const ys = data.map((d) => d.pcaY);
+    const xs = points.map((d) => d._px);
+    const ys = points.map((d) => d._py);
     const xMin = Math.min(...xs);
     const xMax = Math.max(...xs);
     const yMin = Math.min(...ys);
     const yMax = Math.max(...ys);
 
-    // Se agrega margen para que no queden pegados
     const xRange = xMax - xMin || 1;
     const yRange = yMax - yMin || 1;
 
@@ -67,7 +91,6 @@ export default function PCAScatter({
 
     const xScale = (v: number) =>
       bounds.left + ((v - ixMin) / (ixMax - ixMin)) * plotW;
-    // y invertido (SVG top→down)
     const yScale = (v: number) =>
       bounds.top + (1 - (v - iyMin) / (iyMax - iyMin)) * plotH;
 
@@ -83,7 +106,7 @@ export default function PCAScatter({
       yTicks: makeTicks(5, iyMin, iyMax),
       bounds,
     };
-  }, [data, containerWidth, height]);
+  }, [points, containerWidth, height]);
 
   // Tooltip state
   const [tip, setTip] = useState<{
@@ -96,13 +119,12 @@ export default function PCAScatter({
     <div ref={ref} className="w-full shadow-xl">
       <div className="flex items-center justify-between mb-2">
         <div className="text-sm font-medium text-gray-700">
-          Distribución PCA (color por categoría)
+          Distribución PCA (PC1 vs PC2)
         </div>
         <div className="flex items-center gap-3 text-xs text-gray-600">
           <LegendDot color="#6366f1" label="Cluster 0" />
           <LegendDot color="#f43f5e" label="Cluster 1" />
           <LegendDot color="#f59e0b" label="Cluster 2" />
-          <LegendDot color="#10b981" label="Cluster 3" />
         </div>
       </div>
 
@@ -169,12 +191,16 @@ export default function PCAScatter({
           />
 
           {/* Puntos */}
-          {data.map((s) => {
-            const cx = xScale(s.pcaX);
-            const cy = yScale(s.pcaY);
+          {points.map((s) => {
+            const cx = xScale(s._px);
+            const cy = yScale(s._py);
             const color = colorBy === "cluster" ? clusterColor(s.cluster) : "#555";
-
             const isHover = hoverId === s.id;
+
+            // Atenuar si hay cluster seleccionado
+            const dim =
+              selectedCluster === "All" || selectedCluster === s.cluster ? 1 : 0.25;
+
             const r = isHover ? pointRadius + 2 : pointRadius;
 
             return (
@@ -184,7 +210,7 @@ export default function PCAScatter({
                 cy={cy}
                 r={r}
                 fill={color}
-                fillOpacity={isHover ? 0.95 : 0.75}
+                fillOpacity={isHover ? 0.95 * dim : 0.75 * dim}
                 stroke={isHover ? "#111827" : "white"}
                 strokeWidth={isHover ? 1 : 1}
                 className="cursor-pointer transition-[r,opacity]"
@@ -227,26 +253,36 @@ export default function PCAScatter({
             className="pointer-events-none absolute z-10 rounded-md border bg-white px-2 py-1 text-xs shadow-md"
             style={{
               left: Math.min(
-                containerWidth - 200,
+                containerWidth - 220,
                 Math.max(8, tip.x - (ref.current?.getBoundingClientRect().left ?? 0) + 8)
               ),
               top:
-                (tip.y - (ref.current?.getBoundingClientRect().top ?? 0)) - 24,
+                (tip.y - (ref.current?.getBoundingClientRect().top ?? 0)) - 28,
             }}
           >
             <div className="font-medium text-gray-800">
               {tip.s.name} <span className="text-gray-400">({tip.s.student_id})</span>
             </div>
             <div className="text-gray-600">
-              Cat: <span className="font-medium">Cluster {tip.s.cluster}</span> · Score:{" "}
+              Cluster <span className="font-medium">{tip.s.cluster}</span> ·{" "}
+              <span className="font-medium">{tip.s.segment}</span>
+            </div>
+            <div className="mt-1 grid grid-cols-2 gap-x-3 gap-y-0.5">
+              <span className="text-gray-500">Score:</span>
               <span className="font-medium">{tip.s.exam_score.toFixed(1)}</span>
+              <span className="text-gray-500">Estudio:</span>
+              <span className="font-medium">
+                {(tip.s.study_minutes_per_day / 60).toFixed(1)} h/día
+              </span>
+              <span className="text-gray-500">Asistencia:</span>
+              <span className="font-medium">{tip.s.attendance_percentage.toFixed(1)}%</span>
             </div>
           </div>
         )}
       </div>
 
       <div className="mt-1 flex items-center justify-between text-[11px] text-gray-400">
-        <span>PCA • pcaX vs pcaY</span>
+        <span>PCA • PC1 vs PC2</span>
         <span>Click en un punto abre el detalle</span>
       </div>
     </div>
