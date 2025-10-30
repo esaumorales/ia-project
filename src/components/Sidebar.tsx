@@ -27,6 +27,7 @@ export default function Sidebar() {
           { to: '/profesor?tab=panel', label: 'Panel Profesor', icon: 'mdi:account-tie-outline' },
           { to: '/profesor?tab=clusters', label: 'Grupos/Clusters', icon: 'mdi:account-group-outline' },
           { to: '/profesor?tab=pca', label: 'PCA', icon: 'mdi:scatter-plot' },
+          { to: '/profesor?tab=rna', label: 'Analisis', icon: 'mdi:lightbulb-on-outline' },
           { to: '/profesor?tab=insights', label: 'Insights', icon: 'mdi:lightbulb-on-outline' },
         ];
 

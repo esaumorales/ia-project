@@ -1,3 +1,4 @@
+// src/pages/ProfessorPage.tsx
 import { useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import ProfessorFilters from '../components/Profesor/ProfessorFilters';
@@ -8,8 +9,9 @@ import StudentDetailModal from '../components/Profesor/StudentDetailModal';
 import PCAScatter from '../components/Profesor/PCAScatter';
 import { useFilteredStudents } from '../shared/hooks';
 import { useAppStore } from '../shared/store';
+import RNA from '../components/Profesor/RNA';
 
-type Tabs = 'panel' | 'clusters' | 'pca' | 'insights';
+type Tabs = 'panel' | 'clusters' | 'pca' | 'rna' | 'insights';
 
 export default function ProfessorPage() {
   const [params] = useSearchParams();
@@ -71,6 +73,13 @@ export default function ProfessorPage() {
       {tab === 'pca' && (
         <div className="mt-6">
           <PCAScatter data={dataset} />
+        </div>
+      )}
+
+      {/* RNA (ahora con predicción Bayesiana Naive usando dataset) */}
+      {tab === 'rna' && (
+        <div className="mt-6">
+          <RNA data={dataset} />
         </div>
       )}
 
