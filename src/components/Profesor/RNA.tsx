@@ -71,17 +71,6 @@ function labelFromScore(score?: number): Perf | null {
   return "Excelente";
 }
 
-// badge
-function chipClass(perf: Perf) {
-  switch (perf) {
-    case "Insuficiente":
-      return "bg-rose-100 text-rose-700 border-rose-200";
-    case "Satisfactorio":
-      return "bg-amber-100 text-amber-700 border-amber-200";
-    case "Excelente":
-      return "bg-emerald-100 text-emerald-700 border-emerald-200";
-  }
-}
 
 // bar simple
 function bar(widthPct: number) {
@@ -96,7 +85,7 @@ export default function RNA({
   data,
   labelKeyCandidates = ["AcademicPerformance", "classLabel"],
 }: RNAProps) {
-  const [perfFilter, setPerfFilter] = useState<PerfFilter>("Todos");
+  const [perfFilter, ] = useState<PerfFilter>("Todos");
   const [pageSize, ] = useState<number>(10);
 
   // columnas disponibles
@@ -238,12 +227,6 @@ export default function RNA({
       ? "id"
       : null);
 
-  const cycleFilter = () => {
-    setPerfFilter((prev) =>
-      prev === "Todos" ? "Insuficiente" : prev === "Insuficiente" ? "Satisfactorio" : prev === "Satisfactorio" ? "Excelente" : "Todos"
-    );
-  };
-
   return (
     <div className="w-full py-6">
       <Card className="border-slate-200">
@@ -293,17 +276,10 @@ export default function RNA({
                 <tr className="text-xs uppercase text-gray-500">
                   <th className="px-3 py-2">#</th>
                   <th className="px-3 py-2">{idKey ?? "estudiante"}</th>
-                  <th className="px-3 py-2">Prob. Insuf.</th>
-                  <th className="px-3 py-2">Prob. Satisf.</th>
-                  <th className="px-3 py-2">Prob. Excel.</th>
+                  <th className="px-3 py-2">Probabilidad Baja</th>
+                  <th className="px-3 py-2">Probabilidad Satisfecho</th>
+                  <th className="px-3 py-2">Probabilidad Excelente</th>
                   <th className="px-3 py-2">
-                    <button
-                      onClick={cycleFilter}
-                      className="text-xs px-2 py-1 rounded-full border bg-slate-50 hover:bg-slate-100"
-                      title="Click para alternar filtro: Todos → Insuficiente → Satisfactorio → Excelente → Todos"
-                    >
-                      Predicción: {perfFilter}
-                    </button>
                   </th>
                 </tr>
               </thead>
@@ -342,10 +318,6 @@ export default function RNA({
                           {bar(pE)}
                           <span className="text-xs font-medium">{pE.toFixed(1)}%</span>
                         </div>
-                      </td>
-
-                      <td className="px-3 py-2">
-                        <span className={`text-xs px-2 py-1 rounded-full border ${chipClass(s.pred)}`}>{s.pred}</span>
                       </td>
                     </tr>
                   );
