@@ -1,24 +1,16 @@
 // src/components/Profesor/ModalDetailTable.tsx
-import  { useEffect, useMemo } from "react";
+import { useEffect, useMemo } from "react";
 
 type Perf = "Insuficiente" | "Satisfactorio" | "Excelente";
-type ProbTriple = { Insuficiente: number; Satisfactorio: number; Excelente: number };
-
-type Scenario = {
-  name: string;
-  pred: Perf;
-  probs: ProbTriple; // 0..1
-};
 
 type Props = {
   open: boolean;
   onClose: () => void;
   student: Record<string, any>;
-  probs: ProbTriple; // 0..1
   pred: Perf;
-  scenarios?: Scenario[]; // opcional: para inyectar escenarios externos
 };
 
+/* ------------------ UI helpers ------------------ */
 function chipClass(perf: Perf) {
   switch (perf) {
     case "Insuficiente":
@@ -35,7 +27,7 @@ function Bar({
   className,
   ariaLabel,
 }: {
-  value: number;
+  value: number; // 0..100
   className: string;
   ariaLabel?: string;
 }) {
@@ -74,33 +66,143 @@ function StatCard({
       <div className="flex items-center gap-3">
         <Bar value={value} className={colorBar} ariaLabel={label} />
         <span className="text-xs font-semibold text-slate-700 w-14 text-right">
-          {value.toFixed(2)}%
+          {value.toFixed(1)}%
         </span>
       </div>
     </div>
   );
 }
 
-// --------- helpers ---------
-function dist(a: ProbTriple, b: ProbTriple) {
-  // distancia euclidiana en el simplex I,S,E (trabajamos en 0..1)
-  const dx = a.Insuficiente - b.Insuficiente;
-  const dy = a.Satisfactorio - b.Satisfactorio;
-  const dz = a.Excelente - b.Excelente;
-  return Math.sqrt(dx * dx + dy * dy + dz * dz);
-}
-// ---------------------------
+/* ------------------ explicación heurística ------------------ */
+function buildReport(student: Record<string, any>, pred: Perf) {
+  const s = student;
 
+  const strengths: string[] = [];
+  const risks: string[] = [];
+  const actions: string[] = [];
+
+  const num = (v: any) => (typeof v === "number" && Number.isFinite(v) ? v : undefined);
+
+  const sleep = num(s.sleep_hours);
+  const att = num(s.attendance_percentage);
+  const study = num(s.study_minutes_per_day);
+  const social = num(s.social_media_minutes);
+  const netflix = num(s.netflix_minutes);
+  const tm = num(s.time_management);
+  const mot = num(s.academic_motivation);
+  const eff = num(s.academic_self_efficacy);
+  const anx = num(s.test_anxiety_level);
+  const foc = num(s.focus_level);
+  const procrast = num(s.procrastination_level);
+  const mh = num(s.mental_health_rating);
+
+  // Fortalezas
+  if (att !== undefined && att >= 90) strengths.push("asistencia constante (≥ 90%)");
+  if (sleep !== undefined && sleep >= 7) strengths.push("higiene del sueño adecuada (≥ 7 h)");
+  if (study !== undefined && study >= 150) strengths.push("buen volumen de estudio (≥ 150 min/día)");
+  if (tm !== undefined && tm >= 4) strengths.push("buena gestión del tiempo");
+  if (mot !== undefined && mot >= 4) strengths.push("motivación académica alta");
+  if (eff !== undefined && eff >= 7) strengths.push("autoeficacia académica elevada");
+  if (foc !== undefined && foc >= 4) strengths.push("buen nivel de foco durante el estudio");
+  if (mh !== undefined && mh >= 7) strengths.push("salud mental percibida como alta");
+
+  // Riesgos
+  if (att !== undefined && att < 75) risks.push("asistencia baja (< 75%)");
+  if (sleep !== undefined && sleep < 6) risks.push("pocas horas de sueño (< 6 h)");
+  if (study !== undefined && study < 90) risks.push("poco tiempo de estudio (< 90 min/día)");
+  if (social !== undefined && social >= 180) risks.push("uso intensivo de redes (≥ 180 min/día)");
+  if (netflix !== undefined && netflix >= 120) risks.push("mucho tiempo en streaming (≥ 120 min/día)");
+  if (tm !== undefined && tm <= 2) risks.push("gestión del tiempo deficiente (≤ 2/5)");
+  if (procrast !== undefined && procrast >= 4) risks.push("procrastinación elevada (≥ 4/5)");
+  if (mot !== undefined && mot <= 2) risks.push("motivación limitada (≤ 2/5)");
+  if (eff !== undefined && eff <= 4) risks.push("baja autoeficacia (≤ 4/10)");
+  if (anx !== undefined && anx >= 7) risks.push("ansiedad ante exámenes alta (≥ 7/10)");
+  if (foc !== undefined && foc <= 2) risks.push("dificultad para sostener el foco (≤ 2/5)");
+  if (mh !== undefined && mh <= 4) risks.push("salud mental percibida como delicada (≤ 4/10)");
+
+  // Acciones recomendadas
+  if (sleep !== undefined && sleep < 7) actions.push("Ajustar rutina de sueño hasta 7–8 h con hora fija de inicio.");
+  if (study !== undefined && study < 150) actions.push("Planificar 2–3 bloques Pomodoro de 50 min/día con pausas activas.");
+  if (tm !== undefined && tm <= 3) actions.push("Usar agenda visual (Trello/Google Calendar) y priorizar tareas por impacto.");
+  if (social !== undefined && social >= 180) actions.push("Limitar redes a 2×15 min/día (temporizador).");
+  if (netflix !== undefined && netflix >= 120) actions.push("Reservar streaming para después del estudio (≤ 60 min/día).");
+  if (procrast !== undefined && procrast >= 4) actions.push("Iniciar con ‘tarea mínima’ de 5 min para romper la inercia.");
+  if (anx !== undefined && anx >= 7) actions.push("Respiración 4-7-8 y simulacros para regular la ansiedad.");
+  if (mot !== undefined && mot <= 3) actions.push("Definir objetivo semanal medible y premiar el avance.");
+  if (eff !== undefined && eff <= 6) actions.push("Llevar log de estudio para reforzar autoeficacia.");
+
+  // Resumen según pred
+  const headline =
+    pred === "Excelente"
+      ? "Perfil con hábitos sólidos y alta probabilidad de rendimiento excelente."
+      : pred === "Satisfactorio"
+      ? "Perfil equilibrado: hay bases correctas y oportunidades claras de mejora."
+      : "Perfil en riesgo: varios hábitos críticos están afectando el desempeño.";
+
+  return { headline, strengths, risks, actions };
+}
+
+/* -------- contexto breve debajo del header -------- */
+function buildContext(student: Record<string, any>, pred: Perf) {
+  const s = student;
+  const parts: string[] = [];
+
+  const num = (v: any) => (typeof v === "number" && Number.isFinite(v) ? v : undefined);
+  const att = num(s.attendance_percentage);
+  const sleep = num(s.sleep_hours);
+  const study = num(s.study_minutes_per_day);
+  const social = num(s.social_media_minutes);
+  const anx = num(s.test_anxiety_level);
+  const tm = num(s.time_management);
+  const mot = num(s.academic_motivation);
+
+  // estado principal
+  parts.push(
+    `El/la estudiante presenta un pronóstico ${pred.toLowerCase()}`
+  );
+
+  // porqués breves (máx 3 causas)
+  const causes: string[] = [];
+  if (att !== undefined) {
+    if (att >= 90) causes.push("asistencia consistente");
+    else if (att < 75) causes.push("asistencia irregular");
+  }
+  if (sleep !== undefined) {
+    if (sleep >= 7) causes.push("sueño suficiente");
+    else if (sleep < 6) causes.push("pocas horas de sueño");
+  }
+  if (study !== undefined) {
+    if (study >= 150) causes.push("buen tiempo de estudio");
+    else if (study < 90) causes.push("bajo tiempo de estudio");
+  }
+  if (tm !== undefined) {
+    if (tm >= 4) causes.push("gestión del tiempo adecuada");
+    else if (tm <= 2) causes.push("gestión del tiempo limitada");
+  }
+  if (mot !== undefined) {
+    if (mot >= 4) causes.push("motivación alta");
+    else if (mot <= 2) causes.push("motivación baja");
+  }
+  if (social !== undefined && social >= 180) causes.push("uso intensivo de redes");
+  if (anx !== undefined && anx >= 7) causes.push("ansiedad elevada en exámenes");
+
+  if (causes.length) {
+    parts.push(`debido a ${causes.slice(0, 3).join(", ")}.`);
+  } else {
+    parts.push("en base a sus hábitos y señales recientes.");
+  }
+
+  return parts.join(", ") + (parts[parts.length - 1].endsWith(".") ? "" : ".");
+}
+
+/* ========================================================= */
 export default function ModalDetailTable({
   open,
   onClose,
   student,
-  probs,
   pred,
-  scenarios,
 }: Props) {
-  // 1) Hooks SIEMPRE arriba (para evitar "Rendered fewer hooks...")
-  // Bloquea scroll y ESC para cerrar
+  /* Hooks SIEMPRE arriba */
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -116,65 +218,6 @@ export default function ModalDetailTable({
     }
   }, [open, onClose]);
 
-  // Probabilidades en %
-  const pct = useMemo(
-    () => ({
-      I: probs.Insuficiente * 100,
-      S: probs.Satisfactorio * 100,
-      E: probs.Excelente * 100,
-    }),
-    [probs]
-  );
-
-  // Escenarios base si no vienen por props
-  const baseScenarios: Scenario[] = useMemo(
-    () => [
-      {
-        name: "Escenario Excelente (4 evidencias)",
-        pred: "Excelente",
-        probs: { Insuficiente: 0.0113, Satisfactorio: 0.1786, Excelente: 0.8101 },
-      },
-      {
-        name:
-          "Escenario Riesgo (motivación limitada, foco disperso, cortas, irregular, básico)",
-        pred: "Insuficiente",
-        probs: { Insuficiente: 0.8499, Satisfactorio: 0.1269, Excelente: 0.0232 },
-      },
-      {
-        name: "Escenario Intermedio (regular/adecuadas/basico)",
-        pred: "Satisfactorio",
-        probs: { Insuficiente: 0.0132, Satisfactorio: 0.7142, Excelente: 0.2725 },
-      },
-      {
-        name: "Escenario Mejora (adecuadas/regular/normal)",
-        pred: "Satisfactorio",
-        probs: { Insuficiente: 0.009, Satisfactorio: 0.4989, Excelente: 0.4921 },
-      },
-      {
-        name: "Escenario Riesgo Mixto (insuficiente, cortas, regular, básico)",
-        pred: "Satisfactorio",
-        probs: { Insuficiente: 0.3086, Satisfactorio: 0.5049, Excelente: 0.1866 },
-      },
-    ],
-    []
-  );
-
-  // Elegir 1 "caso asignado" más cercano a las probabilidades del alumno
-  const assignedCase = useMemo(() => {
-    const pool = scenarios && scenarios.length ? scenarios : baseScenarios;
-    let best = pool[0];
-    let bestD = Infinity;
-    for (const sc of pool) {
-      const d = dist(probs, sc.probs);
-      if (d < bestD) {
-        best = sc;
-        bestD = d;
-      }
-    }
-    return best;
-  }, [probs, scenarios, baseScenarios]);
-
-  // Avatar por iniciales
   const name = student.name ?? student.student_id ?? student.id ?? "Estudiante";
   const initials = String(name)
     .split(" ")
@@ -183,16 +226,16 @@ export default function ModalDetailTable({
     .join("")
     .toUpperCase();
 
-  // 2) Ahora sí puedes cortar si no está abierto (después de los hooks)
+  const report = useMemo(() => buildReport(student, pred), [student, pred]);
+  const contextLine = useMemo(() => buildContext(student, pred), [student, pred]);
+
+  /* Después de los hooks: early return seguro */
   if (!open) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
       {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/40 backdrop-blur-[1px]"
-        onClick={onClose}
-      />
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-[1px]" onClick={onClose} />
       {/* Dialog */}
       <div
         role="dialog"
@@ -207,23 +250,15 @@ export default function ModalDetailTable({
               {initials}
             </div>
             <div>
-              <h3
-                id="student-modal-title"
-                className="text-base sm:text-lg font-semibold text-slate-900"
-              >
+              <h3 id="student-modal-title" className="text-base sm:text-lg font-semibold text-slate-900">
                 {String(name)}
               </h3>
-              {student.student_id && (
-                <div className="text-xs text-slate-500">ID: {student.student_id}</div>
-              )}
+              {student.student_id && <div className="text-xs text-slate-500">ID: {student.student_id}</div>}
             </div>
           </div>
 
           <div className="flex items-center gap-3">
-            <span
-              className={`text-xs px-2 py-1 rounded-full border ${chipClass(pred)}`}
-              title="Pronóstico actual"
-            >
+            <span className={`text-xs px-2 py-1 rounded-full border ${chipClass(pred)}`} title="Pronóstico actual">
               {pred}
             </span>
             <button
@@ -236,40 +271,18 @@ export default function ModalDetailTable({
           </div>
         </div>
 
+        {/* Contexto breve debajo del header */}
+        <div className="px-4 sm:px-6 py-3 border-b bg-white">
+          <p className="text-sm text-slate-700">
+            {contextLine}
+          </p>
+        </div>
+
         {/* Body (scroll interno) */}
         <div className="max-h-[90vh] overflow-y-auto px-4 sm:px-6 py-5 space-y-6">
-          {/* Probabilidades actuales */}
-          <section>
-            <div className="text-sm font-semibold text-slate-800 mb-3">
-              Probabilidades del alumno
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              <StatCard
-                label="Insuficiente"
-                value={pct.I}
-                colorBar="bg-rose-500"
-                colorText="text-rose-700"
-              />
-              <StatCard
-                label="Satisfactorio"
-                value={pct.S}
-                colorBar="bg-amber-500"
-                colorText="text-amber-700"
-              />
-              <StatCard
-                label="Excelente"
-                value={pct.E}
-                colorBar="bg-emerald-500"
-                colorText="text-emerald-700"
-              />
-            </div>
-          </section>
-
           {/* Datos del alumno */}
           <section>
-            <div className="text-sm font-semibold text-slate-800 mb-3">
-              Datos del alumno
-            </div>
+            <div className="text-sm font-semibold text-slate-800 mb-3">Datos del alumno</div>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm">
               {"exam_score" in student && (
                 <div className="p-3 rounded-xl border bg-white shadow-sm">
@@ -280,9 +293,7 @@ export default function ModalDetailTable({
               {"attendance_percentage" in student && (
                 <div className="p-3 rounded-xl border bg-white shadow-sm">
                   <div className="text-xs text-slate-500">Asistencia</div>
-                  <div className="font-medium text-slate-800">
-                    {student.attendance_percentage}%
-                  </div>
+                  <div className="font-medium text-slate-800">{student.attendance_percentage}%</div>
                 </div>
               )}
               {"sleep_hours" in student && (
@@ -294,88 +305,63 @@ export default function ModalDetailTable({
               {"study_minutes_per_day" in student && (
                 <div className="p-3 rounded-xl border bg-white shadow-sm">
                   <div className="text-xs text-slate-500">Estudio (min/día)</div>
-                  <div className="font-medium text-slate-800">
-                    {student.study_minutes_per_day}
-                  </div>
+                  <div className="font-medium text-slate-800">{student.study_minutes_per_day}</div>
                 </div>
               )}
               {"social_media_minutes" in student && (
                 <div className="p-3 rounded-xl border bg-white shadow-sm">
                   <div className="text-xs text-slate-500">Redes (min/día)</div>
-                  <div className="font-medium text-slate-800">
-                    {student.social_media_minutes}
-                  </div>
+                  <div className="font-medium text-slate-800">{student.social_media_minutes}</div>
                 </div>
               )}
               {"netflix_minutes" in student && (
                 <div className="p-3 rounded-xl border bg-white shadow-sm">
                   <div className="text-xs text-slate-500">Streaming (min/día)</div>
-                  <div className="font-medium text-slate-800">
-                    {student.netflix_minutes}
-                  </div>
+                  <div className="font-medium text-slate-800">{student.netflix_minutes}</div>
                 </div>
               )}
             </div>
           </section>
 
-          {/* Caso asignado (1 solo) */}
+          {/* Reporte narrativo */}
           <section>
-            <div className="text-sm font-semibold text-slate-800 mb-3">
-              Caso asignado según probabilidades
-            </div>
-            <div className="rounded-2xl border bg-white p-4 shadow-sm space-y-3">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <div className="text-sm font-semibold text-slate-900">Caso</div>
-                  <div className="text-xs text-slate-600">{assignedCase.name}</div>
-                </div>
-                <span
-                  className={`text-xs px-2 py-1 rounded-full border ${chipClass(
-                    assignedCase.pred
-                  )}`}
-                >
-                  {assignedCase.pred}
-                </span>
-              </div>
+            <div className="text-sm font-semibold text-slate-800 mb-2">Reporte</div>
+            <div className="rounded-2xl border bg-white p-4 shadow-sm space-y-4">
+              <p className="text-sm text-slate-800">{report.headline}</p>
 
-              <div className="space-y-2">
-                <div className="flex items-center gap-3">
-                  <div className="w-28 text-xs text-rose-700">
-                    Insuficiente {(assignedCase.probs.Insuficiente * 100).toFixed(2)}%
-                  </div>
-                  <Bar
-                    value={assignedCase.probs.Insuficiente * 100}
-                    className="bg-rose-500"
-                    ariaLabel="Insuficiente (caso asignado)"
-                  />
+              {!!report.strengths.length && (
+                <div>
+                  <div className="text-xs font-semibold text-emerald-700 mb-1">Fortalezas</div>
+                  <ul className="list-disc pl-5 text-sm text-slate-800 space-y-1">
+                    {report.strengths.map((t, i) => (
+                      <li key={i}>{t}</li>
+                    ))}
+                  </ul>
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-28 text-xs text-amber-700">
-                    Satisfactorio {(assignedCase.probs.Satisfactorio * 100).toFixed(2)}%
-                  </div>
-                  <Bar
-                    value={assignedCase.probs.Satisfactorio * 100}
-                    className="bg-amber-500"
-                    ariaLabel="Satisfactorio (caso asignado)"
-                  />
+              )}
+
+              {!!report.risks.length && (
+                <div>
+                  <div className="text-xs font-semibold text-rose-700 mb-1">Riesgos / señales a vigilar</div>
+                  <ul className="list-disc pl-5 text-sm text-slate-800 space-y-1">
+                    {report.risks.map((t, i) => (
+                      <li key={i}>{t}</li>
+                    ))}
+                  </ul>
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-28 text-xs text-emerald-700">
-                    Excelente {(assignedCase.probs.Excelente * 100).toFixed(2)}%
-                  </div>
-                  <Bar
-                    value={assignedCase.probs.Excelente * 100}
-                    className="bg-emerald-500"
-                    ariaLabel="Excelente (caso asignado)"
-                  />
+              )}
+
+              {!!report.actions.length && (
+                <div>
+                  <div className="text-xs font-semibold text-sky-700 mb-1">Acciones recomendadas (7–14 días)</div>
+                  <ul className="list-disc pl-5 text-sm text-slate-800 space-y-1">
+                    {report.actions.map((t, i) => (
+                      <li key={i}>{t}</li>
+                    ))}
+                  </ul>
                 </div>
-              </div>
+              )}
             </div>
-            <p className="text-[11px] text-slate-500 mt-2">
-              * El caso se selecciona por cercanía (distancia euclidiana) entre las
-              probabilidades del alumno (Insuficiente/Satisfactorio/Excelente) y
-              los escenarios predefinidos.
-            </p>
           </section>
         </div>
       </div>
