@@ -49,30 +49,6 @@ function Bar({
   );
 }
 
-function StatCard({
-  label,
-  value,
-  colorBar,
-  colorText,
-}: {
-  label: string;
-  value: number; // 0..100
-  colorBar: string;
-  colorText: string;
-}) {
-  return (
-    <div className="rounded-xl border bg-white p-3 shadow-sm">
-      <div className={`text-xs font-medium ${colorText} mb-1`}>{label}</div>
-      <div className="flex items-center gap-3">
-        <Bar value={value} className={colorBar} ariaLabel={label} />
-        <span className="text-xs font-semibold text-slate-700 w-14 text-right">
-          {value.toFixed(1)}%
-        </span>
-      </div>
-    </div>
-  );
-}
-
 /* ------------------ explicación heurística ------------------ */
 function buildReport(student: Record<string, any>, pred: Perf) {
   const s = student;
