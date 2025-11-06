@@ -1,4 +1,3 @@
-// src/components/Profesor/ModalDetailTable.tsx
 import { useEffect, useMemo } from "react";
 
 type Perf = "Insuficiente" | "Satisfactorio" | "Excelente";
@@ -8,6 +7,8 @@ type Props = {
   onClose: () => void;
   student: Record<string, any>;
   pred: Perf;
+  probs?: { Insuficiente: number; Satisfactorio: number; Excelente: number };
+  scenarios?: { name: string; pred: Perf; probs: { Insuficiente: number; Satisfactorio: number; Excelente: number } }[];
 };
 
 /* ------------------ UI helpers ------------------ */
@@ -20,33 +21,6 @@ function chipClass(perf: Perf) {
     case "Excelente":
       return "bg-emerald-50 text-emerald-700 border-emerald-200";
   }
-}
-
-function Bar({
-  value,
-  className,
-  ariaLabel,
-}: {
-  value: number; // 0..100
-  className: string;
-  ariaLabel?: string;
-}) {
-  const width = Math.max(0, Math.min(100, value));
-  return (
-    <div
-      className="w-full bg-slate-100 rounded h-2"
-      role="progressbar"
-      aria-valuenow={Number(width.toFixed(1))}
-      aria-valuemin={0}
-      aria-valuemax={100}
-      aria-label={ariaLabel}
-    >
-      <div
-        className={`h-2 rounded transition-[width] duration-300 ${className}`}
-        style={{ width: `${width}%` }}
-      />
-    </div>
-  );
 }
 
 /* ------------------ explicación heurística ------------------ */
@@ -132,12 +106,8 @@ function buildContext(student: Record<string, any>, pred: Perf) {
   const tm = num(s.time_management);
   const mot = num(s.academic_motivation);
 
-  // estado principal
-  parts.push(
-    `El/la estudiante presenta un pronóstico ${pred.toLowerCase()}`
-  );
+  parts.push(`El/la estudiante presenta un pronóstico ${pred.toLowerCase()}`);
 
-  // porqués breves (máx 3 causas)
   const causes: string[] = [];
   if (att !== undefined) {
     if (att >= 90) causes.push("asistencia consistente");
@@ -178,7 +148,6 @@ export default function ModalDetailTable({
   student,
   pred,
 }: Props) {
-  /* Hooks SIEMPRE arriba */
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -205,8 +174,8 @@ export default function ModalDetailTable({
   const report = useMemo(() => buildReport(student, pred), [student, pred]);
   const contextLine = useMemo(() => buildContext(student, pred), [student, pred]);
 
-  /* Después de los hooks: early return seguro */
   if (!open) return null;
+
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
